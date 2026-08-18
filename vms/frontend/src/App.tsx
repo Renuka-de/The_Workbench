@@ -4,7 +4,12 @@ import { AuthProvider } from './hooks/useAuth';
 import { AppLayout } from './layouts/AppLayout';
 import { LoginPage } from './pages/auth/LoginPage';
 import { RegisterPage } from './pages/auth/RegisterPage';
+import { CreateVendorProjectPage } from './pages/vendor/CreateVendorProjectPage';
+import { EditVendorProjectPage } from './pages/vendor/EditVendorProjectPage';
+import { VendorAssignmentsPage } from './pages/vendor/VendorAssignmentsPage';
 import { VendorDashboardPage } from './pages/vendor/VendorDashboardPage';
+import { VendorProjectDetailsPage } from './pages/vendor/VendorProjectDetailsPage';
+import { VendorProjectsPage } from './pages/vendor/VendorProjectsPage';
 import { ContractorDashboardPage } from './pages/contractor/ContractorDashboardPage';
 import { ProjectManagerDashboardPage } from './pages/project-manager/ProjectManagerDashboardPage';
 import { ProtectedRoute } from './router/ProtectedRoute';
@@ -38,6 +43,46 @@ export default function App() {
                 element={
                   <ProtectedRoute role="VENDOR">
                     <VendorDashboardPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/vendor/projects"
+                element={
+                  <ProtectedRoute role="VENDOR">
+                    <VendorProjectsPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/vendor/projects/create"
+                element={
+                  <ProtectedRoute role="VENDOR">
+                    <CreateVendorProjectPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/vendor/projects/:id"
+                element={
+                  <ProtectedRoute role="VENDOR">
+                    <VendorProjectDetailsPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/vendor/projects/:id/edit"
+                element={
+                  <ProtectedRoute role="VENDOR">
+                    <EditVendorProjectPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/vendor/assignments"
+                element={
+                  <ProtectedRoute role="VENDOR">
+                    <VendorAssignmentsPage />
                   </ProtectedRoute>
                 }
               />

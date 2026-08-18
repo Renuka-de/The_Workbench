@@ -2,6 +2,7 @@ import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import authRoutes from './routes/authRoutes.js';
+import vendorRoutes from './routes/vendorRoutes.js';
 
 const app = express();
 const PORT = Number(process.env.PORT ?? 4000);
@@ -20,6 +21,7 @@ app.get('/health', (_req, res) => {
 });
 
 app.use('/api/auth', authRoutes);
+app.use('/api/vendor', vendorRoutes);
 
 app.use((err: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
   console.error(err);
