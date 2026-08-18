@@ -57,6 +57,7 @@ model Project {
   description      String?
   vendorId         String
   projectManagerId String
+  hourlyRate       Float                @default(0)
   status           ProjectStatus        @default(DRAFT)
   startDate        DateTime?
   endDate          DateTime?
@@ -100,6 +101,8 @@ model Timesheet {
   reviewedAt      DateTime?
   reviewedBy      String?
   rejectionReason String?
+  billed          Boolean        @default(false)
+  billedAt        DateTime?
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
   project         Project        @relation(fields: [projectId], references: [id])
@@ -109,4 +112,127 @@ model Timesheet {
 
   @@unique([contractorId, projectId, workDate])
   @@map("timesheets")
+}
+
+enum MilestoneStatus {
+  PENDING
+  COMPLETED
+  APPROVED
+}
+
+enum InvoiceStatus {
+  GENERATED
+  VALIDATED
+  EXCEPTION
+}
+
+enum InvoiceApprovalStatus {
+  PENDING_PM_APPROVAL
+  APPROVED
+  REJECTED
+}
+
+enum InvoiceItemType {
+  TIMESHEET
+  MILESTONE
+}
+
+enum NotificationType {
+  INVOICE_GENERATED
+  INVOICE_APPROVED
+  INVOICE_REJECTED
+  VALIDATION_FAILED
+}
+
+enum NotificationChannel {
+  EMAIL
+  IN_APP
+}
+
+model Milestone {
+  id          String          @id @default(cuid())
+  projectId   String
+  name        String
+  description String?
+  amount      Float
+  status      MilestoneStatus @default(PENDING)
+  dueDate     DateTime?
+  completedAt DateTime?
+  approvedAt  DateTime?
+  approvedBy  String?
+  billedAt    DateTime?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  project     Project         @relation(fields: [projectId], references: [id])
+  approver    User?           @relation(fields: [approvedBy], references: [id])
+
+  @@map("milestones")
+}
+
+model Invoice {
+  id                 String                @id @default(cuid())
+  projectId          String
+  vendorId           String
+  periodStart        DateTime?
+  periodEnd          DateTime?
+  generatedAt        DateTime              @default(now())
+  generatedBy        String?
+  storedAmount       Float
+  calculatedAmount   Float?
+  status             InvoiceStatus         @default(GENERATED)
+  approvalStatus     InvoiceApprovalStatus @default(PENDING_PM_APPROVAL)
+  approvedAt         DateTime?
+  approvedBy         String?
+  metadata           Json?
+  createdAt          DateTime              @default(now())
+  updatedAt          DateTime              @updatedAt
+  project            Project               @relation(fields: [projectId], references: [id])
+  vendor             User                  @relation(fields: [vendorId], references: [id])
+  approver           User?                 @relation(fields: [approvedBy], references: [id])
+  items              InvoiceItem[]
+
+  @@map("invoices")
+}
+
+model InvoiceItem {
+  id           String          @id @default(cuid())
+  invoiceId    String
+  type         InvoiceItemType
+  referenceId  String?         // Timesheet id or Milestone id
+  description  String
+  quantity     Float
+  unitAmount   Float
+  lineAmount   Float
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+  invoice      Invoice         @relation(fields: [invoiceId], references: [id])
+
+  @@map("invoice_items")
+}
+
+model ApprovalHistory {
+  id         String   @id @default(cuid())
+  entityType String
+  entityId   String
+  action     String
+  actorId    String
+  comment    String?
+  timestamp  DateTime @default(now())
+
+  @@map("approval_history")
+}
+
+model Notification {
+  id        String             @id @default(cuid())
+  recipientId String
+  type      NotificationType
+  channel   NotificationChannel
+  payload   Json
+  sentAt    DateTime?
+  readAt    DateTime?
+  createdAt DateTime           @default(now())
+
+  recipient User               @relation(fields: [recipientId], references: [id])
+
+  @@map("notifications")
 }

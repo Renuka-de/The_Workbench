@@ -6,6 +6,10 @@ import projectRoutes from './routes/project.routes.js';
 import assignmentRoutes from './routes/assignment.routes.js';
 import timesheetRoutes from './routes/timesheet.routes.js';
 import vendorRoutes from './routes/vendorRoutes.js';
+import mockRoutes from './routes/mock.routes.js';
+import milestoneRoutes from './routes/milestone.routes.js';
+import invoiceRoutes from './routes/invoice.routes.js';
+import notificationRoutes from './routes/notification.routes.js';
 
 const app = express();
 const PORT = Number(process.env.PORT ?? 4000);
@@ -28,6 +32,11 @@ app.use('/api/projects', projectRoutes);
 app.use('/api/assignments', assignmentRoutes);
 app.use('/api/timesheets', timesheetRoutes);
 app.use('/api/vendor', vendorRoutes);
+app.use('/api/milestones', milestoneRoutes);
+app.use('/api/invoices', invoiceRoutes);
+app.use('/api/notifications', notificationRoutes);
+// Mock routes for offline testing without a database
+app.use('/api/mock', mockRoutes);
 
 app.use((err: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
   console.error(err);
