@@ -6,10 +6,7 @@ const navByRole: Record<Role, { label: string; to: string }[]> = {
   VENDOR: [
     { label: 'Dashboard', to: '/vendor/dashboard' },
     { label: 'Projects', to: '/vendor/projects' },
-    { label: 'Contractors', to: '/vendor/contractors' },
-    { label: 'Invoices', to: '/vendor/invoices' },
-    { label: 'Notifications', to: '/vendor/notifications' },
-    { label: 'Profile', to: '/vendor/profile' },
+    { label: 'Assignments', to: '/vendor/assignments' },
   ],
   CONTRACTOR: [
     { label: 'Dashboard', to: '/contractor/dashboard' },
