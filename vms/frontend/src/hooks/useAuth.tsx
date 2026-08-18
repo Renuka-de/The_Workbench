@@ -60,6 +60,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setToken(null);
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(USER_KEY);
+    // navigate back to login. use location.replace to avoid keeping secured page in history
+    try {
+      window.location.replace('/login');
+    } catch {
+      // fallback: set href
+      window.location.href = '/login';
+    }
   };
 
   const value = useMemo<AuthContextValue>(

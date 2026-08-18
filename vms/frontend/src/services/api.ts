@@ -1,26 +1,56 @@
 import type { AuthSession, User } from '../types/auth';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:4000/api';
+const USE_MOCK = (import.meta.env.VITE_USE_MOCK ?? 'false') === 'true';
+const API_BASE_URL = USE_MOCK
+  ? import.meta.env.VITE_API_URL ?? 'http://localhost:4000/api/mock'
+  : import.meta.env.VITE_API_URL ?? 'http://localhost:4000/api';
 
 export async function apiRequest<T>(path: string, options: RequestInit = {}): Promise<T> {
   const token = localStorage.getItem('vms_token');
+  const url = `${API_BASE_URL}${path}`;
 
-  const response = await fetch(`${API_BASE_URL}${path}`, {
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      ...(options.headers ?? {}),
-    },
-  });
-
-  const payload = await response.json();
-
-  if (!response.ok) {
-    throw new Error(payload.message ?? 'Request failed');
+  function safeStringify(v: unknown) {
+    try {
+      return JSON.stringify(v);
+    } catch {
+      return String(v);
+    }
   }
 
-  return payload.data as T;
+  try {
+    const response = await fetch(url, {
+      ...options,
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...(options.headers ?? {}),
+      },
+    });
+
+    let payload: any = null;
+    try {
+      payload = await response.json();
+    } catch (parseErr) {
+      console.error('apiRequest: failed to parse JSON', { url, status: response.status, parseError: parseErr });
+      throw new Error(`Request to ${path} returned invalid JSON (status ${response.status})`);
+    }
+
+    if (!response.ok) {
+      console.error('apiRequest error', {
+        url,
+        status: response.status,
+        responseBody: payload,
+        request: { options: safeStringify(options) },
+      });
+      throw new Error(payload?.message ?? `Request failed with status ${response.status}`);
+    }
+
+    return payload.data as T;
+  } catch (err: any) {
+    // Network or unexpected error
+    console.error('apiRequest exception', { url, err: err?.message ?? err, options: safeStringify(options) });
+    throw err instanceof Error ? err : new Error('Network or unexpected error while making API request');
+  }
 }
 
 export async function loginUser(email: string, password: string): Promise<AuthSession> {

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { getProject } from '../../services/api';
+import { listMilestones, createMilestone, approveMilestone, type Milestone } from '../../services/milestone';
 
 export function ProjectManagerProjectDetailPage() {
   const { projectId } = useParams();
@@ -71,6 +72,112 @@ export function ProjectManagerProjectDetailPage() {
             <p className="text-sm text-slate-600">No assigned contractors yet.</p>
           )}
         </div>
+      </div>
+
+      <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+        <h3 className="text-xl font-semibold text-slate-900">Milestones</h3>
+        <div className="mt-4">
+          <MilestonesSection projectId={projectId!} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function MilestonesSection({ projectId }: { projectId: string }) {
+  const [milestones, setMilestones] = useState<Milestone[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string>('');
+
+  const [name, setName] = useState('');
+  const [description, setDescription] = useState('');
+  const [amount, setAmount] = useState<number>(0);
+  const [dueDate, setDueDate] = useState('');
+  const [saving, setSaving] = useState(false);
+
+  const load = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const items = await listMilestones(projectId);
+      setMilestones(items);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unable to load milestones');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    void load();
+  }, [projectId]);
+
+  const handleCreate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+    setError('');
+    try {
+      await createMilestone(projectId, { name, description, amount, dueDate: dueDate || undefined });
+      setName('');
+      setDescription('');
+      setAmount(0);
+      setDueDate('');
+      await load();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to create milestone');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleApprove = async (id: string) => {
+    setError('');
+    try {
+      await approveMilestone(id);
+      await load();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to approve milestone');
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      <form onSubmit={handleCreate} className="grid gap-3 md:grid-cols-4">
+        <input required value={name} onChange={(e) => setName(e.target.value)} placeholder="Milestone name" className="rounded-lg border border-slate-200 px-3 py-2" />
+        <input value={amount} onChange={(e) => setAmount(Number(e.target.value))} type="number" min={0} step="0.01" placeholder="Amount" className="rounded-lg border border-slate-200 px-3 py-2" />
+        <input value={dueDate} onChange={(e) => setDueDate(e.target.value)} type="date" className="rounded-lg border border-slate-200 px-3 py-2" />
+        <button disabled={saving} className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white">{saving ? 'Saving...' : 'Create'}</button>
+        <textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Description (optional)" className="md:col-span-4 rounded-lg border border-slate-200 px-3 py-2" />
+      </form>
+
+      {error ? <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">{error}</div> : null}
+
+      <div>
+        {loading ? (
+          <div className="text-slate-500">Loading milestones…</div>
+        ) : milestones.length === 0 ? (
+          <div className="text-slate-500">No milestones yet.</div>
+        ) : (
+          <div className="space-y-3">
+            {milestones.map((m) => (
+              <div key={m.id} className="rounded-xl border border-slate-200 p-3">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <p className="font-medium text-slate-900">{m.name}</p>
+                    <p className="text-sm text-slate-600">{m.description ?? ''}</p>
+                    <p className="mt-2 text-sm text-slate-600">Amount: {m.amount} · Due: {m.dueDate ?? '—'}</p>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-sm text-slate-600">{m.status}</div>
+                    {m.status === 'COMPLETED' ? (
+                      <button onClick={() => handleApprove(m.id)} className="mt-2 rounded-lg bg-emerald-600 px-3 py-1 text-xs text-white">Approve</button>
+                    ) : null}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
