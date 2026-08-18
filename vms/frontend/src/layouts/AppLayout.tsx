@@ -13,15 +13,14 @@ const navByRole: Record<Role, { label: string; to: string }[]> = {
   ],
   CONTRACTOR: [
     { label: 'Dashboard', to: '/contractor/dashboard' },
+    { label: 'Assignments', to: '/contractor/assignments' },
     { label: 'My Projects', to: '/contractor/projects' },
     { label: 'Timesheets', to: '/contractor/timesheets' },
     { label: 'Profile', to: '/contractor/profile' },
   ],
   PROJECT_MANAGER: [
     { label: 'Dashboard', to: '/project-manager/dashboard' },
-    { label: 'Projects', to: '/project-manager/projects' },
     { label: 'Timesheets', to: '/project-manager/timesheets' },
-    { label: 'Milestones', to: '/project-manager/milestones' },
     { label: 'Profile', to: '/project-manager/profile' },
   ],
 };

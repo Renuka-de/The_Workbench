@@ -13,16 +13,100 @@ enum Role {
   PROJECT_MANAGER
 }
 
+enum ProjectStatus {
+  DRAFT
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+enum AssignmentStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  COMPLETED
+}
+
+enum TimesheetStatus {
+  DRAFT
+  SUBMITTED
+  APPROVED
+  REJECTED
+}
+
 model User {
-  id           String   @id @default(cuid())
-  name         String
-  email        String   @unique
-  passwordHash String
-  role         Role
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id                    String               @id @default(cuid())
+  name                  String
+  email                 String               @unique
+  passwordHash          String
+  role                  Role
+  createdAt             DateTime             @default(now())
+  updatedAt             DateTime             @updatedAt
+  vendorProjects        Project[]            @relation("VendorProjects")
+  managedProjects       Project[]            @relation("ManagedProjects")
+  contractorAssignments ContractorAssignment[] @relation("ContractorAssignments")
+  contractorTimesheets  Timesheet[]          @relation("ContractorTimesheets")
+  reviewedTimesheets    Timesheet[]          @relation("ReviewedTimesheets")
 
   @@map("users")
 }
 
-// Future Phase 2 modules can reference User via userId foreign keys.
+model Project {
+  id               String               @id @default(cuid())
+  name             String
+  description      String?
+  vendorId         String
+  projectManagerId String
+  status           ProjectStatus        @default(DRAFT)
+  startDate        DateTime?
+  endDate          DateTime?
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
+  vendor           User                 @relation("VendorProjects", fields: [vendorId], references: [id])
+  projectManager   User                 @relation("ManagedProjects", fields: [projectManagerId], references: [id])
+  assignments      ContractorAssignment[]
+  timesheets       Timesheet[]
+
+  @@map("projects")
+}
+
+model ContractorAssignment {
+  id           String            @id @default(cuid())
+  projectId    String
+  contractorId String
+  status       AssignmentStatus  @default(PENDING)
+  assignedAt   DateTime          @default(now())
+  respondedAt  DateTime?
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+  project      Project           @relation(fields: [projectId], references: [id])
+  contractor   User              @relation("ContractorAssignments", fields: [contractorId], references: [id])
+  timesheets   Timesheet[]
+
+  @@unique([projectId, contractorId])
+  @@map("contractor_assignments")
+}
+
+model Timesheet {
+  id              String         @id @default(cuid())
+  projectId       String
+  contractorId    String
+  assignmentId    String
+  workDate        DateTime
+  hours           Float
+  description     String
+  status          TimesheetStatus @default(DRAFT)
+  submittedAt     DateTime?
+  reviewedAt      DateTime?
+  reviewedBy      String?
+  rejectionReason String?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  project         Project        @relation(fields: [projectId], references: [id])
+  contractor      User           @relation("ContractorTimesheets", fields: [contractorId], references: [id])
+  assignment      ContractorAssignment @relation(fields: [assignmentId], references: [id])
+  reviewer        User?          @relation("ReviewedTimesheets", fields: [reviewedBy], references: [id])
+
+  @@unique([contractorId, projectId, workDate])
+  @@map("timesheets")
+}

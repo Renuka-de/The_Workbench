@@ -56,3 +56,54 @@ export async function getCurrentUser(): Promise<User> {
   const payload = await apiRequest<{ user: User }>('/auth/me');
   return payload.user;
 }
+
+export async function getProjects() {
+  return apiRequest<any[]>('/projects');
+}
+
+export async function getProject(projectId: string) {
+  return apiRequest<any>(`/projects/${projectId}`);
+}
+
+export async function getAssignments() {
+  return apiRequest<any[]>('/assignments');
+}
+
+export async function acceptAssignment(assignmentId: string) {
+  return apiRequest<any>(`/assignments/${assignmentId}/accept`, { method: 'POST' });
+}
+
+export async function rejectAssignment(assignmentId: string) {
+  return apiRequest<any>(`/assignments/${assignmentId}/reject`, { method: 'POST' });
+}
+
+export async function submitTimesheet(input: {
+  projectId: string;
+  workDate: string;
+  hours: number;
+  description: string;
+}) {
+  return apiRequest<any>('/timesheets', {
+    method: 'POST',
+    body: JSON.stringify(input),
+  });
+}
+
+export async function getMyTimesheets() {
+  return apiRequest<any[]>('/timesheets/my');
+}
+
+export async function getPendingTimesheets() {
+  return apiRequest<any[]>('/timesheets/pending');
+}
+
+export async function approveTimesheet(timesheetId: string) {
+  return apiRequest<any>(`/timesheets/${timesheetId}/approve`, { method: 'POST' });
+}
+
+export async function rejectTimesheet(timesheetId: string, reason: string) {
+  return apiRequest<any>(`/timesheets/${timesheetId}/reject`, {
+    method: 'POST',
+    body: JSON.stringify({ reason }),
+  });
+}

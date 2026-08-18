@@ -6,7 +6,13 @@ import { LoginPage } from './pages/auth/LoginPage';
 import { RegisterPage } from './pages/auth/RegisterPage';
 import { VendorDashboardPage } from './pages/vendor/VendorDashboardPage';
 import { ContractorDashboardPage } from './pages/contractor/ContractorDashboardPage';
+import { ContractorAssignmentsPage } from './pages/contractor/ContractorAssignmentsPage';
+import { ContractorProjectsPage } from './pages/contractor/ContractorProjectsPage';
+import { ContractorProjectDetailPage } from './pages/contractor/ContractorProjectDetailPage';
+import { ContractorTimesheetsPage } from './pages/contractor/ContractorTimesheetsPage';
 import { ProjectManagerDashboardPage } from './pages/project-manager/ProjectManagerDashboardPage';
+import { ProjectManagerProjectDetailPage } from './pages/project-manager/ProjectManagerProjectDetailPage';
+import { ProjectManagerTimesheetsPage } from './pages/project-manager/ProjectManagerTimesheetsPage';
 import { ProtectedRoute } from './router/ProtectedRoute';
 
 const queryClient = new QueryClient();
@@ -50,10 +56,66 @@ export default function App() {
                 }
               />
               <Route
+                path="/contractor/assignments"
+                element={
+                  <ProtectedRoute role="CONTRACTOR">
+                    <ContractorAssignmentsPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/contractor/projects"
+                element={
+                  <ProtectedRoute role="CONTRACTOR">
+                    <ContractorProjectsPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/contractor/projects/:projectId"
+                element={
+                  <ProtectedRoute role="CONTRACTOR">
+                    <ContractorProjectDetailPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/contractor/projects/:projectId/timesheets"
+                element={
+                  <ProtectedRoute role="CONTRACTOR">
+                    <ContractorTimesheetsPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/contractor/timesheets"
+                element={
+                  <ProtectedRoute role="CONTRACTOR">
+                    <ContractorTimesheetsPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
                 path="/project-manager/dashboard"
                 element={
                   <ProtectedRoute role="PROJECT_MANAGER">
                     <ProjectManagerDashboardPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/project-manager/projects/:projectId"
+                element={
+                  <ProtectedRoute role="PROJECT_MANAGER">
+                    <ProjectManagerProjectDetailPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/project-manager/timesheets"
+                element={
+                  <ProtectedRoute role="PROJECT_MANAGER">
+                    <ProjectManagerTimesheetsPage />
                   </ProtectedRoute>
                 }
               />
